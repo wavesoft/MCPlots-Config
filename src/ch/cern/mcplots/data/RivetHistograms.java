@@ -312,24 +312,22 @@ public class RivetHistograms {
     }
     
     public void save() throws IOException {
-        PrintWriter fWriter = new PrintWriter(configFile);
-        
         // Write heading comment
-        if (!headingComment.isEmpty()) {
-            fWriter.println(headingComment);
-        }
-        
-        // Process data groups
-        for (DataGroup g: dataGroups) {
-            fWriter.print(g.comment);
-            for (Data d: g.values) {
-                fWriter.println(d.toString());
+        try (PrintWriter fWriter = new PrintWriter(configFile)) {
+            // Write heading comment
+            if (!headingComment.isEmpty()) {
+                fWriter.println(headingComment);
             }
-            fWriter.println();
+
+            // Process data groups
+            for (DataGroup g: dataGroups) {
+                fWriter.print(g.comment);
+                for (Data d: g.values) {
+                    fWriter.println(d.toString());
+                }
+                fWriter.println();
+            }
         }
-        
-        // Close and flush
-        fWriter.close();
     }
     
     public RivetHistograms(String filename) {
