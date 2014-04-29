@@ -6,40 +6,111 @@
 
 package ch.cern.mcplots;
 
+import ch.cern.mcplots.data.RivetInfo;
 import ch.cern.mcplots.data.TracCrawler;
+import ch.cern.mcplots.ui.ProgressEvents;
+import ch.cern.mcplots.ui.ProgressWindow;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author icharala
  */
-public class RivetConfig extends javax.swing.JFrame {
+public class RivetConfig extends javax.swing.JFrame 
+                         implements RivetInfo.AsyncAnalysisMatrixHandler, RivetInfo.AsyncTagsHandler 
+    {
 
-    TracCrawler rivetTrac;
     HashMap<String, String> rivetTags;
+    RivetInfo rivetInfo;
+
+    @Override
+    public void rivetMatrixReceived(HashMap<String, Object> analysisData) {
+
+        // Populate list
+        DefaultTableModel model = (DefaultTableModel) jRivetTable.getModel();
+        model.setRowCount(0);
+        
+        for (String fname: analysisData.keySet()) {
+            Map info = (Map) analysisData.get(fname);
+            if (info == null) {
+                model.addRow(new Object[]
+                    { fname, "????", "Error parsing data!", "???", "???", "", false }
+                );
+            } else {
+                model.addRow(new Object[]
+                    { fname, info.get("Year") , info.get("Summary"), info.get("Experiment"), info.get("Collider"), info.get("Status"), false }
+                );
+            }
+        }
+        
+        jRivetTable.setModel(model);
+
+    }
+
+    @Override
+    public void rivetTagsReceived(HashMap<String, String> tags) {
+        
+        // Store tags
+        rivetTags = tags;
+
+        // Populate rivet version field
+        jRivetTags.removeAllItems();
+        for (String tag: rivetTags.keySet()) {
+            jRivetTags.addItem(tag);
+        }
+    }
+    
+    /*
+    @Override
+    public void progress(final String message, final int item, final int max) {
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                jProgressLabel.setText(message);
+                jProgressBar.setMaximum(max);
+                jProgressBar.setValue(item);
+            }
+        });
+    }
+    
+    @Override
+    public void progressStarted() {
+        jProgressLabel.setText("");
+        jProgressBar.setMaximum(100);
+        jProgressBar.setValue(0);
+        jProgressPanel.setVisible(true);
+    }
+
+    @Override
+    public void progressCompleted() {
+        jProgressPanel.setVisible(false);
+    }
+    */
     
     /**
      * Creates new form RivetConfig
      */
     public RivetConfig() {
+                
         initComponents();
 
         // Initialize TRAC Crawler to rivet TRAC
         TracCrawler.trustAllSSL();
-        rivetTrac = new TracCrawler("https://rivet.hepforge.org/trac/browser");
+
+        // Initialize Rivet info class
+        rivetInfo = new RivetInfo();
         
-        // Get rivet TAGs
-        rivetTags = rivetTrac.getTags();
-        
-        // Populate rivet version field
-        jComboBox1.removeAllItems();
-        for (String tag: rivetTags.keySet()) {
-            jComboBox1.addItem(tag);
-        }
+        rivetInfo.asyncGetTags(this, ProgressWindow.singleton());
         
     }
 
@@ -52,43 +123,146 @@ public class RivetConfig extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         jButton2 = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jRivetTags = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jRivetTable = new javax.swing.JTable();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jButton7 = new javax.swing.JButton();
+        jButton8 = new javax.swing.JButton();
+        jButton9 = new javax.swing.JButton();
+        jButton10 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        jProgressPanel = new javax.swing.JPanel();
+        jProgressLabel = new javax.swing.JLabel();
+        jProgressBar = new javax.swing.JProgressBar();
+        jLoadingIcon = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Rivet Configuration");
 
+        jButton2.setText("Cancel");
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel1.setText("Rivet version:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+        jRivetTags.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
+                jRivetTagsActionPerformed(evt);
             }
         });
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                jList1ValueChanged(evt);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel2.setText("jLabel2");
+
+        jTextField1.setText("jTextField1");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jRivetTags, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jRivetTags, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(235, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Configuration", jPanel2);
+
+        jRivetTable.setAutoCreateRowSorter(true);
+        jRivetTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Analysis ID", "Year", "Summary", "Experiment", "Collider", "Status", "In use"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, true
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane3.setViewportView(jRivetTable);
+        if (jRivetTable.getColumnModel().getColumnCount() > 0) {
+            jRivetTable.getColumnModel().getColumn(1).setMinWidth(50);
+            jRivetTable.getColumnModel().getColumn(1).setPreferredWidth(50);
+            jRivetTable.getColumnModel().getColumn(1).setMaxWidth(80);
+            jRivetTable.getColumnModel().getColumn(2).setMinWidth(100);
+            jRivetTable.getColumnModel().getColumn(2).setPreferredWidth(200);
+            jRivetTable.getColumnModel().getColumn(6).setMinWidth(40);
+            jRivetTable.getColumnModel().getColumn(6).setPreferredWidth(40);
+            jRivetTable.getColumnModel().getColumn(6).setMaxWidth(40);
+        }
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        jButton3.setText("Uncheck All");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("Check Not Validated");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jButton5.setText("Check Validated");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jButton6.setText("Check  Preliminary");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -96,36 +270,136 @@ public class RivetConfig extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 135, Short.MAX_VALUE)
+                        .addComponent(jButton6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                        .addComponent(jButton5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton3)
+                    .addComponent(jButton4)
+                    .addComponent(jButton5)
+                    .addComponent(jButton6))
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("General", jPanel1);
+        jTabbedPane1.addTab("Built-in analyses", jPanel1);
 
-        jButton2.setText("Cancel");
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Analysis ID", "Has Ref. Data?"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Boolean.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(jTable1);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(1).setMinWidth(100);
+            jTable1.getColumnModel().getColumn(1).setPreferredWidth(100);
+            jTable1.getColumnModel().getColumn(1).setMaxWidth(100);
+        }
+
+        jButton7.setText("Add new analysis");
+
+        jButton8.setText("Add reference data");
+
+        jButton9.setText("Remove");
+
+        jButton10.setText("Edit");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 597, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addComponent(jButton10)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton7)))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton7)
+                    .addComponent(jButton8)
+                    .addComponent(jButton9)
+                    .addComponent(jButton10))
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Custom analyses", jPanel3);
 
         jButton1.setText("Apply Configuration");
+
+        jProgressPanel.setBackground(new java.awt.Color(102, 102, 102));
+        jProgressPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 5, 2, 5));
+
+        jProgressLabel.setForeground(new java.awt.Color(255, 255, 255));
+        jProgressLabel.setText("Status panel");
+
+        jLoadingIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ch/cern/mcplots/ui/sandglass-s.png"))); // NOI18N
+
+        javax.swing.GroupLayout jProgressPanelLayout = new javax.swing.GroupLayout(jProgressPanel);
+        jProgressPanel.setLayout(jProgressPanelLayout);
+        jProgressPanelLayout.setHorizontalGroup(
+            jProgressPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jProgressPanelLayout.createSequentialGroup()
+                .addComponent(jLoadingIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jProgressPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jProgressLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        jProgressPanelLayout.setVerticalGroup(
+            jProgressPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jProgressPanelLayout.createSequentialGroup()
+                .addComponent(jProgressLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(jProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(jLoadingIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -135,58 +409,86 @@ public class RivetConfig extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTabbedPane1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)))
+                        .addComponent(jProgressPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jProgressPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+    private void jRivetTagsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRivetTagsActionPerformed
         
         // Fetch selection
         DefaultListModel<String> model = new DefaultListModel<>();
-        String tagName = (String) jComboBox1.getSelectedItem();
+        String tagName = (String) jRivetTags.getSelectedItem();
         if (tagName == null) return;
         
         // List analysis files
-        ArrayList<String> analyses = rivetTrac.getFiles( "src/Analyses", rivetTags.get(tagName) );
+        rivetInfo.asyncGetAnalysesMatrix(rivetTags.get(tagName), 2, this, ProgressWindow.singleton());
         
-        // Pick only the appropriate ones
-        for (String fname: analyses) {
-            if (fname.endsWith(".cc")) {
-                model.addElement(fname.substring(0, fname.length()-3));
+    }//GEN-LAST:event_jRivetTagsActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        
+        DefaultTableModel model = (DefaultTableModel) jRivetTable.getModel();
+        for (int i=0; i<model.getRowCount(); i++) {
+            model.setValueAt(false, i, 6);
+        }
+        
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+
+        DefaultTableModel model = (DefaultTableModel) jRivetTable.getModel();
+        for (int i=0; i<model.getRowCount(); i++) {
+            String v = (String) model.getValueAt(i, 5);
+            if (v.toLowerCase().startsWith("unvalidated")) {
+                model.setValueAt(true, i, 6);
             }
         }
-        jList1.setModel(model);
         
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+    }//GEN-LAST:event_jButton4ActionPerformed
 
-    private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+
+        DefaultTableModel model = (DefaultTableModel) jRivetTable.getModel();
+        for (int i=0; i<model.getRowCount(); i++) {
+            String v = (String) model.getValueAt(i, 5);
+            if (v.toLowerCase().startsWith("validated")) {
+                model.setValueAt(true, i, 6);
+            }
+        }
         
-        int id = evt.getFirstIndex();
-        String analysisName = (String)jList1.getModel().getElementAt(id);
-        String tagName = (String) jComboBox1.getSelectedItem();
-        if (tagName == null) return;
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+
+        DefaultTableModel model = (DefaultTableModel) jRivetTable.getModel();
+        for (int i=0; i<model.getRowCount(); i++) {
+            String v = (String) model.getValueAt(i, 5);
+            if (v.toLowerCase().startsWith("preliminary")) {
+                model.setValueAt(true, i, 6);
+            }
+        }
         
-        jTextArea1.setText( rivetTrac.downloadFile("data/anainfo/" + analysisName + ".info", rivetTags.get(tagName) ) );
-        
-    }//GEN-LAST:event_jList1ValueChanged
+    }//GEN-LAST:event_jButton6ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -218,6 +520,25 @@ public class RivetConfig extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+                
+                try {
+                        // Set System L&F
+                    UIManager.setLookAndFeel(
+                        UIManager.getSystemLookAndFeelClassName());
+                } 
+                catch (UnsupportedLookAndFeelException e) {
+                   // handle exception
+                }
+                catch (ClassNotFoundException e) {
+                   // handle exception
+                }
+                catch (InstantiationException e) {
+                   // handle exception
+                }
+                catch (IllegalAccessException e) {
+                   // handle exception
+                }
+                
                 new RivetConfig().setVisible(true);
             }
         });
@@ -225,14 +546,32 @@ public class RivetConfig extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
+    private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jList1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLoadingIcon;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JProgressBar jProgressBar;
+    private javax.swing.JLabel jProgressLabel;
+    private javax.swing.JPanel jProgressPanel;
+    private javax.swing.JTable jRivetTable;
+    private javax.swing.JComboBox jRivetTags;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
+
+
 }
